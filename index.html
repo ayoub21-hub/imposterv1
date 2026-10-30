@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IMPOSTER</title>
+    <!-- استدعاء الخطوط والأيقونات -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Creepster&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- إعدادات الألوان الأساسية (مأخوذة من الصورة) --- */
+        :root {
+            --bg-dark: #090a0f;
+            --bg-panel: #12141c;
+            --primary-red: #ff003c;
+            --primary-red-glow: rgba(255, 0, 60, 0.4);
+            --btn-dark-blue: #1a1c29;
+            --btn-dark-blue-hover: #252838;
+            --text-white: #ffffff;
+            --text-gray: #8b8d98;
+            --civil-green: #00e676;
+            --civil-bg: #0a1f15;
+            --impostor-red: #ff003c;
+            --impostor-bg: #1f0a10;
+            --timer-blue: #00e5ff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-white);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* تأثير الإضاءة الخلفية */
+            background-image: radial-gradient(circle at center, #1a0b12 0%, var(--bg-dark) 70%);
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            max-width: 400px;
+            padding: 20px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .screen.active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* --- الشاشة 1: البداية (Splash) --- */
+        .logo-title {
+            font-family: 'Creepster', cursive;
+            font-size: 4.5rem;
+            color: var(--primary-red);
+            text-shadow: 0 0 25px var(--primary-red-glow);
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: var(--text-gray);
+            text-align: center;
+            font-size: 1rem;
+            margin-bottom: 60px;
+        }
+
+        /* --- الأزرار --- */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-red);
+            color: white;
+            box-shadow: 0 0 15px var(--primary-red-glow);
+        }
+        .btn-primary:active { transform: scale(0.96); opacity: 0.9; }
+
+        .btn-secondary {
+            background-color: var(--btn-dark-blue);
+            color: var(--text-white);
+            border: 1px solid #2a2d3e;
+        }
+        .btn-secondary:active { background-color: var(--btn-dark-blue-hover); transform: scale(0.96); }
+
+        /* --- الشاشة 2 & 3: إعداد اللاعبين --- */
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .input-container {
+            display: flex;
+            width: 100%;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid #2a2d3e;
+            background-color: var(--bg-panel);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            text-align: center;
+        }
+
+        .player-list {
+            width: 100%;
+            max-height: 40vh;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .player-item {
+            background-color: var(--bg-panel);
+            padding: 14px 20px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #1f2231;
+            font-weight: 600;
+        }
+
+        .remove-btn {
+            background: none;
+            color: var(--primary-red);
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        /* --- الشاشة 4: الإعدادات --- */
+        .settings-group {
+            width: 100%;
+            background-color: var(--bg-panel);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 1px solid #1f2231;
+        }
+
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #2a2d3e;
+        }
+        .setting-item:last-child { border-bottom: none; }
+
+        /* Switch Toggle */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #333; transition: .4s; border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 18px; width: 18px;
+            left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--civil-green); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        select {
+            background-color: var(--bg-dark); color: white; border: 1px solid #2a2d3e;
+            padding: 8px 12px; border-radius: 8px; font-family: inherit; outline: none;
+        }
+
+        /* --- الشاشة 6 & 7: تمرير الهاتف وعرض الدور --- */
+        .phone-icon {
+            font-size: 4rem;
+            color: var(--text-white);
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+        .role-card {
+            width: 100%;
+            padding: 40px 20px;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .role-card.civil { 
+            background-color: var(--civil-bg); 
+            border: 1px solid var(--civil-green);
+            box-shadow: 0 0 20px rgba(0, 230, 118, 0.1);
+        }
+        .role-card.impostor { 
+            background-color: var(--impostor-bg); 
+            border: 1px solid var(--impostor-red);
+            box-shadow: 0 0 20px var(--primary-red-glow);
+        }
+
+        .role-icon { font-size: 4rem; margin-bottom: 15px; }
+        .role-card.civil .role-icon { color: var(--civil-green); }
+        .role-card.impostor .role-icon { color: var(--impostor-red); }
+
+        .role-title { font-size: 1.8rem; font-weight: 900; margin-bottom: 15px; }
+        .role-card.civil .role-title { color: var(--civil-green); }
+        .role-card.impostor .role-title { color: var(--impostor-red); }
+
+        .secret-word-box {
+            background-color: rgba(0,0,0,0.4);
+            padding: 15px 30px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        .secret-word-box span { display: block; color: var(--text-gray); font-size: 0.9rem; margin-bottom: 5px; }
+        .secret-word-box strong { font-size: 1.8rem; color: #fbbf24; }
+
+        /* --- الشاشة 8: المؤقت واللعب --- */
+        .timer-box {
+            background-color: var(--bg-panel);
+            border: 1px solid #2a2d3e;
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .timer-text {
+            font-size: 5rem;
+            font-weight: 900;
+            color: var(--timer-blue);
+            text-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
+            font-variant-numeric: tabular-nums;
+        }
+        .timer-label { color: var(--text-gray); font-size: 0.9rem; }
+
+        .players-turn {
+            display: flex;
+            width: 100%;
+            gap: 15px;
+        }
+        .turn-card {
+            flex: 1;
+            background-color: var(--bg-panel);
+            border: 1px solid #1f2231;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        .turn-card.questioner { border-bottom: 3px solid var(--primary-red); }
+        .turn-card.answerer { border-bottom: 3px solid var(--timer-blue); }
+        
+        .turn-card i { font-size: 1.5rem; margin-bottom: 10px; color: var(--text-gray); }
+        .turn-name { font-size: 1.2rem; font-weight: 700; }
+        .turn-card.questioner .turn-name { color: var(--primary-red); }
+        .turn-card.answerer .turn-name { color: var(--timer-blue); }
+
+    </style>
+</head>
+<body>
+
+    <!-- 1. شاشة البداية -->
+    <div id="screen-menu" class="screen active">
+        <!-- شكل الشخص الغامض (تم تقليده بـ CSS) -->
+        <div style="width: 150px; height: 150px; background: radial-gradient(circle, #ff003c 0%, transparent 70%); margin-bottom: -20px; opacity: 0.3;"></div>
+        
+        <h1 class="logo-title">IMPOSTER</h1>
+        <p class="subtitle">كولشي حقيقة...<br>ماشي كولشي كيعرفها</p>
+        
+        <div style="width: 100%; margin-top: 20px;">
+            <button class="btn btn-primary" onclick="navigate('screen-setup')">START</button>
+        </div>
+    </div>
+
+    <!-- 2. شاشة اللاعبين -->
+    <div id="screen-setup" class="screen">
+        <h2 class="header-title">إعداد اللاعبين</h2>
+        
+        <div class="input-container">
+            <input type="text" id="player-name-input" placeholder="اسم اللاعب..." autocomplete="off" onkeypress="handleKeyPress(event)">
+            <button class="btn btn-secondary" style="width: auto; margin: 0; padding: 0 20px;" onclick="addPlayer()">+</button>
+        </div>
+
+        <div class="player-list" id="player-list-container"></div>
+
+        <button class="btn btn-primary" id="btn-next-to-settings" onclick="goToSettings()" disabled>التالي</button>
+        <button class="btn btn-secondary" onclick="navigate('screen-menu')">رجوع</button>
+    </div>
+
+    <!-- 3. شاشة الإعدادات -->
+    <div id="screen-settings" class="screen">
+        <h2 class="header-title">الإعدادات</h2>
+        
+        <div class="settings-group">
+            <div class="setting-item">
+                <span>مساعد الإمبوستر (Helper)</span>
+                <label class="switch">
+                    <input type="checkbox" id="helper-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <span>عدد الإمبوسترات</span>
+                <select id="impostor-count">
+                    <option value="1">1 إمبوستر</option>
+                    <option value="2">2 إمبوستر</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <span>مدة المؤقت</span>
+                <select id="timer-duration">
+                    <option value="30">30 ثانية</option>
+                    <option value="45">45 ثانية</option>
+                    <option value="60">60 ثانية</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="btn btn-primary" onclick="startGame()">بدء اللعبة</button>
+        <button class="btn btn-secondary" onclick="navigate('screen-setup')">رجوع</button>
+    </div>
+
+    <!-- 4. شاشة تمرير الهاتف -->
+    <div id="screen-pass" class="screen">
+        <i class="fa-solid fa-mobile-screen-button phone-icon"></i>
+        <h2 style="color: var(--text-gray); font-weight: normal; margin-bottom: 10px;">مرر الهاتف إلى</h2>
+        <h1 id="pass-player-name" style="color: white; font-size: 2.5rem; margin-bottom: 40px;">اللاعب</h1>
+        <button class="btn btn-primary" onclick="showRole()">إظهار الدور</button>
+    </div>
+
+    <!-- 5. شاشة عرض الدور -->
+    <div id="screen-role" class="screen">
+        <div id="role-card-display" class="role-card civil">
+            <i id="role-icon" class="fa-solid fa-user-secret role-icon"></i>
+            <div id="role-title" class="role-title">مدني</div>
+            
+            <div id="word-display" class="secret-word-box">
+                <span>الكلمة السرية</span>
+                <strong>كلمة</strong>
+            </div>
+            <p id="role-desc" style="color: var(--text-gray); margin-top: 15px; font-size: 0.9rem;"></p>
+        </div>
+        <button class="btn btn-secondary" onclick="hideRole()">إخفاء الدور</button>
+    </div>
+
+    <!-- 6. شاشة اللعب (المؤقت) -->
+    <div id="screen-game" class="screen">
+        <div class="timer-box">
+            <div class="timer-label">الوقت المتبقي</div>
+            <div class="timer-text" id="timer-display">00:30</div>
+        </div>
+        
+        <div class="players-turn">
+            <div class="turn-card questioner">
+                <i class="fa-solid fa-comment-dots"></i>
+                <div class="turn-name" id="questioner-name">-</div>
+            </div>
+            <div class="turn-card answerer">
+                <i class="fa-solid fa-microphone"></i>
+                <div class="turn-name" id="answerer-name">-</div>
+            </div>
+        </div>
+
+        <button class="btn btn-secondary" onclick="stopGameAndVote()" style="margin-top: 30px;">إنهاء الجولة والتصويت</button>
+    </div>
+
+    <!-- 7. شاشة التصويت -->
+    <div id="screen-vote" class="screen">
+        <h2 class="header-title">من هو الإمبوستر؟</h2>
+        <div class="player-list" id="vote-list-container" style="max-height: 60vh;"></div>
+    </div>
+
+    <!-- 8. شاشة النتائج -->
+    <div id="screen-result" class="screen">
+        <h1 id="result-title" style="color: white; font-size: 2.5rem; margin-bottom: 10px;">النتيجة</h1>
+        <p id="result-subtitle" style="color: var(--text-gray); margin-bottom: 30px; text-align: center;"></p>
+        
+        <div class="role-card impostor" style="padding: 20px;">
+            <div style="color: var(--text-gray); font-size: 0.9rem;">الإمبوستر كان:</div>
+            <div style="color: var(--impostor-red); font-size: 1.5rem; font-weight: bold; margin-bottom: 15px;" id="impostor-name-reveal">-</div>
+            <div style="color: var(--text-gray); font-size: 0.9rem;">الكلمة السرية كانت:</div>
+            <div style="color: #fbbf24; font-size: 1.5rem; font-weight: bold;" id="word-reveal">-</div>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top: 30px;" onclick="location.reload()">لعبة جديدة</button>
+    </div>
+
+    <script>
+        // --- المنطق البرمجي (نفس النسخة السابقة مع تعديلات بسيطة) ---
+        const words = [
+  // المدن والدول
+  "المغرب", "فرنسا", "إسبانيا", "إيطاليا", "ألمانيا",
+  "أمريكا", "كندا", "تركيا", "اليابان", "الصين",
+  "مصر", "السعودية", "الإمارات", "البرتغال", "البرازيل",
+  "مراكش", "أكادير", "طنجة", "الرباط", "فاس",
+  "الدار البيضاء", "تطوان", "وجدة", "العيون", "كلميم",
+  "باريس", "لندن", "مدريد", "روما", "نيويورك",
+  "دبي", "مكة", "المدينة", "طوكيو",
+
+  // الفضاء والطبيعة
+  "القمر", "الشمس", "الأرض", "المريخ", "النجوم",
+  "البحر", "النهر", "الجبل", "الغابة", "الصحراء",
+  "البركان", "الشلال", "الجزيرة", "الرمل", "الحجر",
+  "الثلج", "المطر", "السحاب", "الريح", "الرعد",
+  "البرق", "قوس قزح", "الكهف", "الوادي", "البحيرة",
+  "الشاطئ", "النخلة", "الوردة", "الشجرة", "العشب",
+
+  // المأكولات
+  "الطاجين", "الكسكس", "الرفيسة", "البسطيلة", "الحريرة",
+  "البيصارة", "المسمن", "الحرشة", "السفنج", "البغرير",
+  "الملوي", "البيتزا", "البرغر", "الشاورما", "الطاكوس",
+  "السوشي", "السباغيتي", "البطاطا المقلية", "الدجاج محمر",
+  "الحوت مشوي", "اللحم مشوي", "البانيني", "البريوات",
+  "البيض", "الجبن", "الزيتون", "الخبز", "العسل",
+  "الزبدة", "المربى", "الشوكولاتة", "البسكويت",
+  "الفشار", "الكفتة", "السردين", "العدس", "اللوبيا",
+  "الأرز", "المعكرونة", "التفاح", "الموز", "البرتقال",
+
+  // التكنولوجيا والأجهزة
+  "التلفون", "الحاسوب", "التلفاز", "الفأرة", "الكلافي",
+  "الشارجور", "السماعات", "الكاميرا", "الطابعة", "الفلاشة",
+  "الويفي", "الروتور", "البطارية", "الشاشة", "الروبوت",
+  "الدرون", "البلايستيشن", "المانيت", "الريموت",
+  "الطابليت", "الساعة الذكية", "الميكرو", "السكانير",
+  "البروجكتور", "الراديو", "المصباح الذكي", "الماوس",
+  "الكابل", "الشاحن اللاسلكي", "الكارت ميموار",
+
+  // المهن
+  "البوليسي", "العسكري", "الطبيب", "المعلم", "الطيار",
+  "البحار", "الطباخ", "الحلاق", "الميكانيكي", "الكهربائي",
+  "البلومبي", "النجار", "الحداد", "السائق", "الفلاح",
+  "الصياد", "الإطفائي", "البناء", "الخباز", "الحارس",
+  "الحكم", "التاجر", "الكساب", "الجزار", "الخياط",
+  "المصور", "المغني", "الممثل", "اللاعب", "ساعي البريد",
+  "عامل النظافة", "رجل الإطفاء", "المحامي", "القاضي",
+
+  // الحيوانات
+  "الأسد", "النمر", "الفيل", "القرد", "الزرافة",
+  "الحصان", "الحمار", "الجمل", "الذئب", "الثعلب",
+  "الدب", "الأرنب", "السلحفاة", "التمساح", "الحوت",
+  "الدلفين", "القرش", "الأخطبوط", "النسر", "البومة",
+  "الدجاجة", "الديك", "البقرة", "الخروف", "الماعز",
+  "القط", "الكلب", "الفأر", "الثعبان", "الضفدع",
+  "النحلة", "الفراشة", "النملة", "البعوضة", "الذبان",
+  "البطريق", "الكنغر", "الطاووس", "الحمامة", "الغراب",
+
+  // المشروبات
+  "أتاي", "القهوة", "الحليب", "عصير البرتقال",
+  "عصير الليمون", "الماء", "كوكا كولا", "فانتا",
+  "سبرايت", "باناشي", "رايبي", "نيسكافي",
+  "اللبن", "الرايب", "عصير التفاح", "عصير الموز",
+  "الماء الغازي", "الشوكولاتة الساخنة", "النعناع",
+
+  // الرياضة والترفيه
+  "كرة القدم", "كرة السلة", "التنس", "الملاكمة",
+  "السباحة", "ركوب الخيل", "الدراجة", "الجري",
+  "البلايستيشن", "السينما", "الكارطة", "الشطرنج",
+  "البلياردو", "كرة الطائرة", "كرة اليد", "اليوغا",
+  "التزلج", "صيد السمك", "كرة الطاولة",
+
+  // أدوات وأشياء يومية
+  "المراية", "المفتاح", "القفل", "الساعة", "النظارات",
+  "الصابون", "فرشاة الأسنان", "المظلة", "الشمعة",
+  "السكين", "الملعقة", "المخدة", "البطانية",
+  "الصندوق", "الحقيبة", "الصباط", "الطابلة",
+  "الكرسي", "الباب", "النافذة", "المصعد",
+  "الدروج", "المصباح", "المروحة", "الثلاجة",
+  "الغسالة", "المكواة", "الخيمة", "الخاتم",
+  "القلم", "الكتاب", "الدفتر", "المحفظة",
+  "المقص", "المشط", "المنشفة", "الدلو",
+  "الكاس", "الصحن", "الطنجرة", "المقلاة",
+  "البوطا", "الزربية", "التلفون", "الفران",
+  "الوسادة", "الستارة", "السلة", "المرشة",
+
+  // وسائل النقل
+  "الطوموبيل", "الطوبيس", "الطاكسي", "القطار",
+  "الطيارة", "السفينة", "الموتور", "التروتينيت",
+  "الدراجة", "الشاحنة", "الجرار", "الهليكوبتر",
+  "المترو", "الكار", "الترامواي", "الغواصة",
+  "القطار السريع", "الكاميو",
+
+  // الجسم والملابس
+  "الرأس", "العين", "الأنف", "الفم", "الأذن",
+  "اليد", "الرجل", "الشعر", "الأسنان", "اللسان",
+  "القلب", "الكرش", "الكتف", "الركبة", "الصبع",
+  "القميجة", "السروال", "الجلباب", "القفطان",
+  "الجاكيطة", "الحذاء", "القبعة", "الجوارب",
+  "النظارات", "الساعة", "الحزام", "الفولار",
+
+  // أماكن معروفة
+  "المدرسة", "المستشفى", "المطار", "المحطة",
+  "المسجد", "السوق", "الحمام", "المقهى",
+  "المطعم", "الفندق", "الملعب", "البحر",
+  "الحديقة", "المكتبة", "السجن", "الميناء",
+  "المخبزة", "الصيدلية", "البنك", "السينما",
+  "المول", "المسبح", "المزرعة", "محطة البنزين",
+
+  // أدوات الكهرباء
+  "المفتاح الكهربائي", "البريزة", "الفيوز", "الكونتاكتور",
+   "المحرك", "الدينامو", "الترانسفورماتور",
+   "البطارية", "اللوحة الشمسية", "الكابل",
+  "الفولتميتر",  
+   "السخان الكهربائي", "الجرس",
+];
+        
+        let players = JSON.parse(localStorage.getItem('imposter_players')) || [];
+        let gameRoles = {}; 
+        let currentPlayerIndex = 0;
+        let secretWord = "";
+        let impostorsList = [];
+        let helperEnabled = false;
+        let timerDuration = 30;
+
+        let timerInterval;
+        let timeLeft = 30;
+
+        document.addEventListener('DOMContentLoaded', () => { renderPlayerList(); });
+
+        function navigate(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function handleKeyPress(e) { if (e.key === 'Enter') addPlayer(); }
+
+        function addPlayer() {
+            const input = document.getElementById('player-name-input');
+            const name = input.value.trim();
+            if (name === "") return;
+            if (players.includes(name)) return alert("الاسم موجود مسبقاً");
+            if (players.length >= 10) return alert("الحد الأقصى 10 لاعبين");
+
+            players.push(name);
+            localStorage.setItem('imposter_players', JSON.stringify(players));
+            input.value = "";
+            renderPlayerList();
+        }
+
+        function removePlayer(index) {
+            players.splice(index, 1);
+            localStorage.setItem('imposter_players', JSON.stringify(players));
+            renderPlayerList();
+        }
+
+        function renderPlayerList() {
+            const container = document.getElementById('player-list-container');
+            container.innerHTML = "";
+            players.forEach((player, index) => {
+                const div = document.createElement('div');
+                div.className = 'player-item';
+                div.innerHTML = `<span>${index + 1}. ${player}</span><button class="remove-btn" onclick="removePlayer(${index})"><i class="fa-solid fa-trash"></i></button>`;
+                container.appendChild(div);
+            });
+            document.getElementById('btn-next-to-settings').disabled = players.length < 4;
+        }
+
+        function goToSettings() {
+            if (players.length < 4) return alert("تحتاج 4 لاعبين على الأقل");
+            navigate('screen-settings');
+        }
+
+        function startGame() {
+            helperEnabled = document.getElementById('helper-toggle').checked;
+            const impostorCount = parseInt(document.getElementById('impostor-count').value);
+            timerDuration = parseInt(document.getElementById('timer-duration').value);
+            if (impostorCount === 2) helperEnabled = false;
+
+            secretWord = WORDS[Math.floor(Math.random() * WORDS.length)];
+            gameRoles = {};
+            currentPlayerIndex = 0;
+
+            let shuffledPlayers = [...players].sort(() => 0.5 - Math.random());
+            impostorsList = shuffledPlayers.slice(0, impostorCount);
+            let helperName = helperEnabled ? shuffledPlayers[impostorCount] : null;
+
+            players.forEach(p => {
+                if (impostorsList.includes(p)) gameRoles[p] = { role: "impostor" };
+                else if (p === helperName) gameRoles[p] = { role: "helper", word: secretWord };
+                else gameRoles[p] = { role: "civil", word: secretWord };
+            });
+
+            timeLeft = timerDuration;
+            showPassScreen();
+        }
+
+        function showPassScreen() {
+            if (currentPlayerIndex >= players.length) { startGameplay(); return; }
+            document.getElementById('pass-player-name').innerText = players[currentPlayerIndex];
+            navigate('screen-pass');
+        }
+
+        function showRole() {
+            const currentPlayer = players[currentPlayerIndex];
+            const roleData = gameRoles[currentPlayer];
+            const card = document.getElementById('role-card-display');
+            const icon = document.getElementById('role-icon');
+            const wordDisplay = document.getElementById('word-display');
+            const roleTitle = document.getElementById('role-title');
+            const roleDesc = document.getElementById('role-desc');
+
+            if (roleData.role === 'impostor') {
+                card.className = "role-card impostor";
+                icon.className = "fa-solid fa-user-secret role-icon";
+                roleTitle.innerText = "IMPOSTOR";
+                wordDisplay.style.display = "none";
+                roleDesc.innerText = "لا تعرف الكلمة السرية. حاول التخمين دون أن ينكشف أمرك!";
+            } else if (roleData.role === 'helper') {
+                card.className = "role-card civil"; // استخدمنا الأخضر كخلفية للهيلبر أيضاً
+                icon.className = "fa-solid fa-user-ninja role-icon";
+                roleTitle.innerText = "HELPER";
+                wordDisplay.style.display = "block";
+                wordDisplay.querySelector('strong').innerText = roleData.word;
+                roleDesc.innerText = "أنت تعرف الكلمة. ساعد الإمبوستر دون أن يكشفك المدنيون!";
+            } else {
+                card.className = "role-card civil";
+                icon.className = "fa-solid fa-user role-icon";
+                roleTitle.innerText = "CIVILIAN";
+                wordDisplay.style.display = "block";
+                wordDisplay.querySelector('strong').innerText = roleData.word;
+                roleDesc.innerText = "اكتشف الإمبوستر من خلال الأسئلة!";
+            }
+
+            navigate('screen-role');
+        }
+
+        function hideRole() {
+            currentPlayerIndex++;
+            showPassScreen();
+        }
+
+        function startGameplay() {
+            navigate('screen-game');
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeLeft = timerDuration;
+            updateTimerDisplay();
+            selectPlayersForRound();
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    timeLeft = timerDuration;
+                    updateTimerDisplay();
+                    selectPlayersForRound(); 
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            document.getElementById('timer-display').innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function selectPlayersForRound() {
+            let questioner, answerer;
+            do {
+                questioner = players[Math.floor(Math.random() * players.length)];
+                answerer = players[Math.floor(Math.random() * players.length)];
+            } while (questioner === answerer);
+
+            document.getElementById('questioner-name').innerText = questioner;
+            document.getElementById('answerer-name').innerText = answerer;
+        }
+
+        function stopGameAndVote() {
+            clearInterval(timerInterval);
+            renderVoteList();
+            navigate('screen-vote');
+        }
+
+        function renderVoteList() {
+            const container = document.getElementById('vote-list-container');
+            container.innerHTML = "";
+            players.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'player-item';
+                div.innerHTML = `<span style="width: 100%; text-align: center; font-size: 1.2rem;">${p}</span>`;
+                div.style.cursor = "pointer";
+                div.onclick = () => processVote(p);
+                container.appendChild(div);
+            });
+        }
+
+        function processVote(votedPlayer) {
+            let resultTitle = document.getElementById('result-title');
+            let resultSubtitle = document.getElementById('result-subtitle');
+            document.getElementById('impostor-name-reveal').innerText = impostorsList.join(" و ");
+            document.getElementById('word-reveal').innerText = secretWord;
+
+            if (impostorsList.includes(votedPlayer)) {
+                resultTitle.innerText = "فاز المدنيون! 🎉";
+                resultTitle.style.color = "var(--civil-green)";
+                resultSubtitle.innerText = `تم التصويت على ${votedPlayer} وكان إمبوستراً!`;
+            } else {
+                resultTitle.innerText = "فاز الإمبوستر! 😈";
+                resultTitle.style.color = "var(--primary-red)";
+                resultSubtitle.innerText = `تم التصويت على ${votedPlayer} خطأً.`;
+            }
+            navigate('screen-result');
+        }
+    </script>
+</body>
+</html>
